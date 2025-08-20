@@ -5,8 +5,7 @@ A simple, powerful Zsh shell function to manage a GCP - starting with VM configs
 ## My own use cases
 
 -   Start, stop, and check the status of VM.
--   Resize the machine type (e.g., from `n1-standard-4` to `n1-highmem-8`).
--   Attach and detach GPUs.
+-   Resize the machine type (e.g., from `n1-standard-4` to `n1-highmem-8`). (This can be done to add or remove GPU based on machine type)
 -   Connect via SSH.
 -   Automatically stops the VM for operations that require it.
 
@@ -62,7 +61,5 @@ The script is used with the syntax `gvm <command> [options]`.
 | `status`              | Checks the current status (e.g., `RUNNING`, `TERMINATED`).       | `gvm status`                           |
 | `ssh`                 | Connects to the VM via SSH.                                      | `gvm ssh`                              |
 | `resize <type>`       | Changes the machine type. **Automatically stops the VM first.** | `gvm resize n1-highmem-8`              |
-| `gpu-add [type] [n]`  | Attaches GPU(s). Defaults to 1 `nvidia-tesla-t4`. **Stops VM.** | `gvm gpu-add nvidia-tesla-v100 2`      |
-| `gpu-remove <type>`   | Detaches all GPUs of a specific type. **Stops VM.** | `gvm gpu-remove nvidia-tesla-v100`     |
 | `help` (or any other) | Displays the help message.                                       | `gvm help`                             |
 

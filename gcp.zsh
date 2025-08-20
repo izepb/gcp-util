@@ -1,4 +1,4 @@
-# A powerful controller function for a Google Cloud VM
+# A controller function for a Google Cloud VM
 # Usage: gvm <command> [options]
 function gvm() {
   # --- Configuration ---
@@ -37,7 +37,12 @@ function gvm() {
     elif [[ "$vm_status" == "TERMINATED" ]]; then
       echo "✅ VM is already stopped. Proceeding."
     else
-      echo "❌ Could not determine VM status or it's in a transient state ($vm_status)."
+      # Handle cases where the VM doesn't exist or is in a transient state.
+      if [[ -z "$vm_status" ]]; then
+        echo "❌ Error: VM '$_VM_NAME' not found in zone '$_VM_ZONE'."
+      else
+        echo "❌ Could not determine VM status or it's in a transient state ($vm_status)."
+      fi
       echo "   Please check the GCP console and try again."
       return 1 # Return an error code
     fi
@@ -81,31 +86,6 @@ function gvm() {
       echo "✅ Success! You can now start the VM with 'gvm start'."
       ;;
 
-    gpu-add)
-      # Set defaults for GPU type and count if not provided by the user.
-      local gpu_type="${1:-nvidia-tesla-t4}"
-      local gpu_count="${2:-1}"
-      if ! _ensure_stopped; then return 1; fi
-      echo "⚡ Attaching $gpu_count x $gpu_type GPU(s) to '$_VM_NAME'..."
-      gcloud compute instances add-accelerator "$_VM_NAME" --zone="$_VM_ZONE" \
-        --accelerator="type=$gpu_type,count=$gpu_count"
-      echo "✅ Success! You can now start the VM with 'gvm start'."
-      ;;
-
-    gpu-remove)
-      local gpu_type="$1"
-      if [[ -z "$gpu_type" ]]; then
-        echo "❌ Error: Please specify the GPU type to remove."
-        echo "   Example: gvm gpu-remove nvidia-tesla-t4"
-        return 1
-      fi
-      if ! _ensure_stopped; then return 1; fi
-      echo "➖ Detaching '$gpu_type' GPU(s) from '$_VM_NAME'..."
-      gcloud compute instances remove-accelerator "$_VM_NAME" --zone="$_VM_ZONE" \
-        --accelerator="type=$gpu_type"
-      echo "✅ Success! You can now start the VM with 'gvm start'."
-      ;;
-
     ssh)
       echo "💻 Connecting to '$_VM_NAME' via SSH..."
       gcloud compute ssh "$_VM_NAME" --zone="$_VM_ZONE"
@@ -120,9 +100,11 @@ function gvm() {
       echo "  stop                Stops the VM."
       echo "  status              Checks the current status (RUNNING, TERMINATED)."
       echo "  ssh                 Connects to the VM via SSH."
-      echo "  resize <type>       Changes the machine type (e.g., n1-highmem-8)."
-      echo "  gpu-add [type] [n]  Attaches GPU(s). Defaults to 1x nvidia-tesla-t4."
-      echo "  gpu-remove <type>   Detaches all GPUs of a specific type."
+      echo "  resize <type>       Changes the machine type. This is used to add/remove GPUs."
+      echo ""
+      echo "GPU Management Examples:"
+      echo "  To ADD a GPU:    gvm resize g2-standard-4  (changes to a GPU machine type)"
+      echo "  To REMOVE a GPU: gvm resize e2-standard-4  (changes back to a general-purpose type)"
       ;;
   esac
 }
