@@ -1,6 +1,6 @@
 # GVM Controller for Google Cloud
 
-A simple, powerful Zsh shell function to manage a GCP - starting with VM configs. This script centralizes common `gcloud` commands into a single, easy-to-use interface called `gvm`.
+A simple, powerful Zsh shell function to manage a GCP - starting with VM configs. This script centralises common `gcloud` commands into a single, easy-to-use interface called `gvm` (just to avoid having to type VM names and zones and making sure the flags are right, etc).
 
 ## My own use cases
 
